@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="DepartmentResourcesApp.MainPage">
+
+    <StackLayout>
+
+        <Label Text="Виберіть XML файл:" />
+
+        <Button Text="Завантажити файл" Clicked="OnFileLoadClicked" />
+
+        <Label x:Name="filePathLabel" Text="Файл не вибрано" />
+
+        <Label Text="Виберіть метод обробки:" />
+
+        <Picker x:Name="strategyPicker">
+            <Picker.ItemsSource>
+                <x:Array Type="{x:Type x:String}">
+                    <x:String>SAX</x:String>
+                    <x:String>DOM</x:String>
+                    <x:String>LINQ</x:String>
+                </x:Array>
+            </Picker.ItemsSource>
+        </Picker>
+
+        <Button Text="Аналізувати" Clicked="OnAnalyzeClicked" />
+        <Label HeightRequest="10"/>
+
+        <Button Text="Перетворити у HTML" Clicked="OnTransformClicked" />
+        <Label HeightRequest="10"/>
+
+        <Button Text="Очистити" Clicked="OnClearClicked" />
+
+    </StackLayout>
+
+</ContentPage>
