@@ -1,5 +1,6 @@
 ﻿using DepartmentResourcesApp.Services;
 using System.Xml.Xsl;
+using System.IO;
 
 namespace DepartmentResourcesApp
 {
@@ -45,12 +46,12 @@ namespace DepartmentResourcesApp
             {
                 PickerTitle = "Виберіть XML файл",
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>()
-        {
-            { DevicePlatform.Android, new[] { ".xsl" } },
-            { DevicePlatform.iOS, new[] { ".xsl" } },
-            { DevicePlatform.WinUI, new[] { ".xsl" } },
-            { DevicePlatform.macOS, new[] { ".xsl" } }
-        })
+                {
+                    { DevicePlatform.Android, new[] { ".xsl" } },
+                    { DevicePlatform.iOS, new[] { ".xsl" } },
+                    { DevicePlatform.WinUI, new[] { ".xsl" } },
+                    { DevicePlatform.macOS, new[] { ".xsl" } }
+                })
             });
 
             if (result != null)
@@ -64,7 +65,6 @@ namespace DepartmentResourcesApp
             }
         }
 
-
         private void OnAnalyzeClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(_filePath))
@@ -74,18 +74,19 @@ namespace DepartmentResourcesApp
             }
 
             string selectedStrategy = (string)strategyPicker.SelectedItem;
-            outputEditor.Text = string.Empty;
+            analysisOutputEditor.Text = string.Empty;
+            htmlWebView.Source = null; // Clear HTML view upon new analysis
 
             switch (selectedStrategy)
             {
                 case "SAX":
-                    _context.SetStrategy(new SAXParser(AppendOutput));
+                    _context.SetStrategy(new SAXParser(AppendAnalysisOutput));
                     break;
                 case "DOM":
-                    _context.SetStrategy(new DOMParser(AppendOutput));
+                    _context.SetStrategy(new DOMParser(AppendAnalysisOutput));
                     break;
                 case "LINQ":
-                    _context.SetStrategy(new LINQParser(AppendOutput));
+                    _context.SetStrategy(new LINQParser(AppendAnalysisOutput));
                     break;
                 default:
                     DisplayAlert("Помилка", "Виберіть спосіб обробки", "OK");
@@ -116,12 +117,16 @@ namespace DepartmentResourcesApp
                 using (var writer = new StringWriter())
                 {
                     xslt.Transform(xmlPath, null, writer);
-                    outputEditor.Text = writer.ToString();
+                    // Set HTML content in WebView
+                    htmlWebView.Source = new HtmlWebViewSource
+                    {
+                        Html = writer.ToString()
+                    };
                 }
             }
             catch (Exception ex)
             {
-                outputEditor.Text = $"Помилка під час трансформації: {ex.Message}";
+                analysisOutputEditor.Text = $"Помилка під час трансформації: {ex.Message}";
             }
         }
 
@@ -132,12 +137,13 @@ namespace DepartmentResourcesApp
             _filePath = string.Empty;
             _xslFilePath = string.Empty;
             strategyPicker.SelectedIndex = -1;
-            outputEditor.Text = string.Empty;
+            analysisOutputEditor.Text = string.Empty;
+            htmlWebView.Source = new HtmlWebViewSource { Html = string.Empty };
         }
 
-        private void AppendOutput(string text)
+        private void AppendAnalysisOutput(string text)
         {
-            outputEditor.Text += text + Environment.NewLine;
+            analysisOutputEditor.Text += text + Environment.NewLine;
         }
     }
 }
