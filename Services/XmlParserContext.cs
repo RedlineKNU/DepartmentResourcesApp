@@ -1,7 +1,4 @@
-﻿using System;
-using DepartmentResourcesApp.Services;
-
-namespace DepartmentResourcesApp.Services
+﻿namespace DepartmentResourcesApp.Services
 {
     public class XmlParserContext
     {
@@ -14,14 +11,7 @@ namespace DepartmentResourcesApp.Services
 
         public void ExecuteStrategy(string filePath)
         {
-            if (_strategy != null)
-            {
-                _strategy.Parse(filePath);
-            }
-            else
-            {
-                Console.WriteLine("Стратегія обробки XML не встановлена.");
-            }
+            _strategy?.Parse(filePath);
         }
     }
 }

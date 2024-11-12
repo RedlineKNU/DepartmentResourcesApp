@@ -1,0 +1,50 @@
+﻿<resources>
+	<resource title="Наукова стаття" type="наукова">
+		<annotation>Дослідження в області штучного інтелекту</annotation>
+		<author department="Кафедра інформатики">Іваненко Іван Іванович</author>
+		<usage_conditions>Безкоштовно для студентів</usage_conditions>
+		<address>https://example.com/article</address>
+	</resource>
+	<resource title="Навчальний посібник" type="навчальний">
+		<annotation>Основи програмування</annotation>
+		<author department="Кафедра прикладної математики">Петренко Петро Петрович</author>
+		<usage_conditions>Доступний у бібліотеці</usage_conditions>
+		<address>https://example.com/book</address>
+	</resource>
+	<resource title="Лабораторні роботи з фізики" type="навчальний">
+		<annotation>Завдання для студентів з фізики для практичних занять</annotation>
+		<author department="Кафедра фізики">Сидоренко Марія Олексіївна</author>
+		<usage_conditions>Безкоштовно для студентів фізичного факультету</usage_conditions>
+		<address>https://example.com/physics-labs</address>
+	</resource>
+	<resource title="Монографія з обчислювальної математики" type="наукова">
+		<annotation>Аналіз чисельних методів в обчислювальних задачах</annotation>
+		<author department="Кафедра обчислювальної математики">Коваленко Олег Іванович</author>
+		<usage_conditions>Доступно для співробітників кафедри та аспірантів</usage_conditions>
+		<address>https://example.com/monograph</address>
+	</resource>
+	<resource title="Курс лекцій з комп'ютерних мереж" type="навчальний">
+		<annotation>Основи комп'ютерних мереж та протоколів зв'язку</annotation>
+		<author department="Кафедра комп'ютерних наук">Мельник Олександр Володимирович</author>
+		<usage_conditions>Доступно для студентів кафедри комп'ютерних наук</usage_conditions>
+		<address>https://example.com/network-course</address>
+	</resource>
+	<resource title="Практикум з аналізу даних" type="навчальний">
+		<annotation>Методи та інструменти для обробки великих даних</annotation>
+		<author department="Кафедра статистики та аналізу даних">Дмитренко Тетяна Павлівна</author>
+		<usage_conditions>Безкоштовно для студентів другого курсу</usage_conditions>
+		<address>https://example.com/data-analysis-practicum</address>
+	</resource>
+	<resource title="Збірник статей з інформаційних технологій" type="наукова">
+		<annotation>Колекція статей на тему сучасних інформаційних технологій</annotation>
+		<author department="Кафедра інформаційних технологій">Гусак Євгенія Миколаївна</author>
+		<usage_conditions>Доступно для студентів і співробітників кафедри</usage_conditions>
+		<address>https://example.com/it-articles</address>
+	</resource>
+	<resource title="Інтернет-ресурси для вивчення математики" type="навчальний">
+		<annotation>Лекції та матеріали з основних тем математики</annotation>
+		<author department="Кафедра математики">Яковенко Андрій Ігорович</author>
+		<usage_conditions>Безкоштовний доступ для всіх студентів університету</usage_conditions>
+		<address>https://example.com/math-resources</address>
+	</resource>
+</resources>

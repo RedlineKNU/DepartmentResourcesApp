@@ -5,10 +5,4 @@
 		<usage_conditions>Безкоштовно для студентів</usage_conditions>
 		<address>https://example.com/article</address>
 	</resource>
-	<resource title="Навчальний посібник" type="навчальний">
-		<annotation>Основи програмування</annotation>
-		<author department="Кафедра прикладної математики">Петренко Петро Петрович</author>
-		<usage_conditions>Доступний у бібліотеці</usage_conditions>
-		<address>https://example.com/book</address>
-	</resource>
 </resources>

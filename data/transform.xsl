@@ -1,22 +1,16 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:template match="/resources">
+	<xsl:output method="html" indent="yes"/>
+
+	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Ресурси кафедри</title>
+				<title>Ресурси</title>
 			</head>
 			<body>
-				<h2>Інформаційні ресурси кафедри</h2>
+				<h1>Ресурси</h1>
 				<table border="1">
-					<tr>
-						<th>Назва</th>
-						<th>Тип</th>
-						<th>Анотація</th>
-						<th>Автор</th>
-						<th>Умови використання</th>
-						<th>Адреса</th>
-					</tr>
-					<xsl:for-each select="resource">
+					<xsl:for-each select="resources/resource">
 						<tr>
 							<td>
 								<xsl:value-of select="@title"/>

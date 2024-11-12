@@ -1,11 +1,16 @@
-﻿using System;
-using System.Linq;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace DepartmentResourcesApp.Services
 {
     public class LINQParser : IXmlParsingStrategy
     {
+        private readonly Action<string> _outputAction;
+
+        public LINQParser(Action<string> outputAction)
+        {
+            _outputAction = outputAction;
+        }
+
         public void Parse(string filePath)
         {
             XDocument document = XDocument.Load(filePath);
@@ -23,13 +28,13 @@ namespace DepartmentResourcesApp.Services
 
             foreach (var resource in resources)
             {
-                Console.WriteLine($"Назва: {resource.Title}");
-                Console.WriteLine($"Тип: {resource.Type}");
-                Console.WriteLine($"Анотація: {resource.Annotation}");
-                Console.WriteLine($"Автор: {resource.Author}");
-                Console.WriteLine($"Умови використання: {resource.UsageConditions}");
-                Console.WriteLine($"Адреса: {resource.Address}");
-                Console.WriteLine(new string('-', 30));
+                _outputAction($"Назва: {resource.Title}");
+                _outputAction($"Тип: {resource.Type}");
+                _outputAction($"Анотація: {resource.Annotation}");
+                _outputAction($"Автор: {resource.Author}");
+                _outputAction($"Умови використання: {resource.UsageConditions}");
+                _outputAction($"Адреса: {resource.Address}");
+                _outputAction(new string('-', 30));
             }
         }
     }

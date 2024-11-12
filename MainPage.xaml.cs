@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Maui.Controls;
-using System.IO;
-using System.Threading.Tasks;
-using DepartmentResourcesApp.Services;
+﻿using DepartmentResourcesApp.Services;
+using System.Xml.Xsl;
 
 namespace DepartmentResourcesApp
 {
@@ -11,16 +7,7 @@ namespace DepartmentResourcesApp
     {
         private XmlParserContext _context = new XmlParserContext();
         private string _filePath;
-
-        // Власний тип для вибору XML файлів
-        private static readonly FilePickerFileType XmlFileType = new FilePickerFileType(
-            new Dictionary<DevicePlatform, IEnumerable<string>>
-            {
-                { DevicePlatform.iOS, new[] { "public.xml" } },
-                { DevicePlatform.Android, new[] { "application/xml" } },
-                { DevicePlatform.WinUI, new[] { ".xml" } },
-                { DevicePlatform.MacCatalyst, new[] { "public.xml" } }
-            });
+        private string _xslFilePath;
 
         public MainPage()
         {
@@ -29,11 +16,16 @@ namespace DepartmentResourcesApp
 
         private async void OnFileLoadClicked(object sender, EventArgs e)
         {
-            // Завантаження XML файлу
             var result = await FilePicker.Default.PickAsync(new PickOptions
             {
                 PickerTitle = "Виберіть XML файл",
-                FileTypes = XmlFileType
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>()
+                {
+                    { DevicePlatform.Android, new[] { ".xml" } },
+                    { DevicePlatform.iOS, new[] { ".xml" } },
+                    { DevicePlatform.WinUI, new[] { ".xml" } },
+                    { DevicePlatform.macOS, new[] { ".xml" } }
+                })
             });
 
             if (result != null)
@@ -47,6 +39,32 @@ namespace DepartmentResourcesApp
             }
         }
 
+        private async void OnXslFileLoadClicked(object sender, EventArgs e)
+        {
+            var result = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "Виберіть XML файл",
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>()
+        {
+            { DevicePlatform.Android, new[] { ".xsl" } },
+            { DevicePlatform.iOS, new[] { ".xsl" } },
+            { DevicePlatform.WinUI, new[] { ".xsl" } },
+            { DevicePlatform.macOS, new[] { ".xsl" } }
+        })
+            });
+
+            if (result != null)
+            {
+                _xslFilePath = result.FullPath;
+                xslPathLabel.Text = $"Файл: {Path.GetFileName(_xslFilePath)} завантажено";
+            }
+            else
+            {
+                await DisplayAlert("Помилка", "Файл не було вибрано", "OK");
+            }
+        }
+
+
         private void OnAnalyzeClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(_filePath))
@@ -56,18 +74,18 @@ namespace DepartmentResourcesApp
             }
 
             string selectedStrategy = (string)strategyPicker.SelectedItem;
+            outputEditor.Text = string.Empty;
 
-            // Вибір стратегії
             switch (selectedStrategy)
             {
                 case "SAX":
-                    _context.SetStrategy(new SAXParser());
+                    _context.SetStrategy(new SAXParser(AppendOutput));
                     break;
                 case "DOM":
-                    _context.SetStrategy(new DOMParser());
+                    _context.SetStrategy(new DOMParser(AppendOutput));
                     break;
                 case "LINQ":
-                    _context.SetStrategy(new LINQParser());
+                    _context.SetStrategy(new LINQParser(AppendOutput));
                     break;
                 default:
                     DisplayAlert("Помилка", "Виберіть спосіб обробки", "OK");
@@ -77,43 +95,49 @@ namespace DepartmentResourcesApp
             _context.ExecuteStrategy(_filePath);
         }
 
-        private void OnTransformClicked(object sender, EventArgs e)
+        private async void OnTransformClicked(object sender, EventArgs e)
         {
-            if (string.IsNullOrEmpty(_filePath))
+            if (string.IsNullOrEmpty(_filePath) || string.IsNullOrEmpty(_xslFilePath))
             {
-                DisplayAlert("Помилка", "Будь ласка, завантажте XML файл", "OK");
+                await DisplayAlert("Помилка", "Будь ласка, завантажте XML і XSL файли", "OK");
                 return;
             }
 
-            string xslFilePath = Path.Combine(Environment.CurrentDirectory, "Data", "transform.xsl");
-            string htmlOutputPath = Path.Combine(Environment.CurrentDirectory, "Data", "output.html");
-
-            TransformXmlToHtml(_filePath, xslFilePath, htmlOutputPath);
-            DisplayAlert("Інформація", "Трансформація у HTML виконана", "OK");
+            TransformXmlToHtml(_filePath, _xslFilePath);
         }
 
-        private void TransformXmlToHtml(string xmlPath, string xslPath, string outputHtmlPath)
+        private void TransformXmlToHtml(string xmlPath, string xslPath)
         {
             try
             {
-                var xslt = new System.Xml.Xsl.XslCompiledTransform();
+                var xslt = new XslCompiledTransform();
                 xslt.Load(xslPath);
-                xslt.Transform(xmlPath, outputHtmlPath);
 
-                Console.WriteLine($"HTML файл збережено в: {outputHtmlPath}");
+                using (var writer = new StringWriter())
+                {
+                    xslt.Transform(xmlPath, null, writer);
+                    outputEditor.Text = writer.ToString();
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Помилка під час трансформації: {ex.Message}");
+                outputEditor.Text = $"Помилка під час трансформації: {ex.Message}";
             }
         }
 
         private void OnClearClicked(object sender, EventArgs e)
         {
-            // Очищення вибору та полів
             filePathLabel.Text = "Файл не вибрано";
+            xslPathLabel.Text = "Файл не вибрано";
             _filePath = string.Empty;
+            _xslFilePath = string.Empty;
             strategyPicker.SelectedIndex = -1;
+            outputEditor.Text = string.Empty;
+        }
+
+        private void AppendOutput(string text)
+        {
+            outputEditor.Text += text + Environment.NewLine;
         }
     }
 }

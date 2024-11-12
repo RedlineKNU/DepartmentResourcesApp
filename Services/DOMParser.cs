@@ -1,10 +1,16 @@
-﻿using System;
-using System.Xml;
+﻿using System.Xml;
 
 namespace DepartmentResourcesApp.Services
 {
     public class DOMParser : IXmlParsingStrategy
     {
+        private readonly Action<string> _outputAction;
+
+        public DOMParser(Action<string> outputAction)
+        {
+            _outputAction = outputAction;
+        }
+
         public void Parse(string filePath)
         {
             XmlDocument doc = new XmlDocument();
@@ -17,28 +23,28 @@ namespace DepartmentResourcesApp.Services
                 var title = resource.Attributes["title"]?.InnerText;
                 var type = resource.Attributes["type"]?.InnerText;
 
-                Console.WriteLine($"Назва: {title}");
-                Console.WriteLine($"Тип: {type}");
+                _outputAction($"Назва: {title}");
+                _outputAction($"Тип: {type}");
 
                 foreach (XmlNode child in resource.ChildNodes)
                 {
                     switch (child.Name)
                     {
                         case "annotation":
-                            Console.WriteLine($"Анотація: {child.InnerText}");
+                            _outputAction($"Анотація: {child.InnerText}");
                             break;
                         case "author":
-                            Console.WriteLine($"Автор: {child.InnerText}");
+                            _outputAction($"Автор: {child.InnerText}");
                             break;
                         case "usage_conditions":
-                            Console.WriteLine($"Умови використання: {child.InnerText}");
+                            _outputAction($"Умови використання: {child.InnerText}");
                             break;
                         case "address":
-                            Console.WriteLine($"Адреса: {child.InnerText}");
+                            _outputAction($"Адреса: {child.InnerText}");
                             break;
                     }
                 }
-                Console.WriteLine(new string('-', 30));
+                _outputAction(new string('-', 30));
             }
         }
     }
