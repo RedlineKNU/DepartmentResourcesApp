@@ -1,6 +1,7 @@
 ﻿using DepartmentResourcesApp.Services;
 using System.Xml.Xsl;
 using System.IO;
+using Microsoft.Maui.Controls;
 
 namespace DepartmentResourcesApp
 {
@@ -44,7 +45,7 @@ namespace DepartmentResourcesApp
         {
             var result = await FilePicker.Default.PickAsync(new PickOptions
             {
-                PickerTitle = "Виберіть XML файл",
+                PickerTitle = "Виберіть XSL файл",
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>()
                 {
                     { DevicePlatform.Android, new[] { ".xsl" } },
@@ -144,6 +145,17 @@ namespace DepartmentResourcesApp
         private void AppendAnalysisOutput(string text)
         {
             analysisOutputEditor.Text += text + Environment.NewLine;
+        }
+
+        // Підтвердження при виході з програми
+        private async void OnExitClicked(object sender, EventArgs e)
+        {
+            var result = await DisplayAlert("Підтвердження", "Чи дійсно ви хочете завершити роботу з програмою?", "Так", "Ні");
+            if (result)
+            {
+                // Закрити додаток
+                System.Diagnostics.Process.GetCurrentProcess().Kill();
+            }
         }
     }
 }

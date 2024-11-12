@@ -5,19 +5,19 @@
 	<xsl:template match="/">
 		<html>
 			<head>
-				<title>Ресурси</title>
+				<title>Ресурси кафедри</title>
 			</head>
 			<body>
-				<h1>Ресурси</h1>
+				<h1>Список ресурсів</h1>
 				<table border="1">
-					<xsl:for-each select="resources/resource">
+					<tr>
+						<th>Анотація</th>
+						<th>Автор</th>
+						<th>Умови використання</th>
+						<th>Адреса</th>
+					</tr>
+					<xsl:for-each select="//resource">
 						<tr>
-							<td>
-								<xsl:value-of select="@title"/>
-							</td>
-							<td>
-								<xsl:value-of select="@type"/>
-							</td>
 							<td>
 								<xsl:value-of select="annotation"/>
 							</td>

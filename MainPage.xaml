@@ -38,7 +38,8 @@
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
                 <Button Text="Аналізувати" Clicked="OnAnalyzeClicked" BackgroundColor="#4CAF50" TextColor="White" />
                 <Button Text="Перетворити у HTML" Clicked="OnTransformClicked" BackgroundColor="#FF9800" TextColor="White" />
-                <Button Text="Очистити" Clicked="OnClearClicked" BackgroundColor="#F44336" TextColor="White" />
+                <Button Text="Очистити все" Clicked="OnClearClicked" BackgroundColor="#F44336" TextColor="White" />
+                <Button Text="Вихід" Clicked="OnExitClicked" BackgroundColor="#D32F2F" TextColor="White" />
             </StackLayout>
 
             <!-- Поле для виводу результатів аналізу -->

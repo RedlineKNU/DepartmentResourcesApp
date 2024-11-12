@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 
 namespace DepartmentResourcesApp.Services
 {
@@ -19,24 +20,29 @@ namespace DepartmentResourcesApp.Services
                 {
                     if (reader.NodeType == XmlNodeType.Element && reader.Name == "resource")
                     {
-                        string title = reader.GetAttribute("title");
-                        string type = reader.GetAttribute("type");
-
-                        _outputAction($"Назва: {title}");
-                        _outputAction($"Тип: {type}");
+                        _outputAction($"Елемент: {reader.Name}");
+                        if (reader.HasAttributes)
+                        {
+                            while (reader.MoveToNextAttribute())
+                            {
+                                _outputAction($"{reader.Name}: {reader.Value}");
+                            }
+                        }
                     }
+                }
+            }
+        }
 
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "annotation")
-                        _outputAction($"Анотація: {reader.ReadElementContentAsString()}");
-
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "author")
-                        _outputAction($"Автор: {reader.ReadElementContentAsString()}");
-
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "usage_conditions")
-                        _outputAction($"Умови використання: {reader.ReadElementContentAsString()}");
-
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "address")
-                        _outputAction($"Адреса: {reader.ReadElementContentAsString()}");
+        public void SearchByKeyword(string filePath, string keyword)
+        {
+            using (XmlReader reader = XmlReader.Create(filePath))
+            {
+                while (reader.Read())
+                {
+                    if (reader.NodeType == XmlNodeType.Text && reader.Value.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _outputAction($"Знайдено збіг: {reader.Value}");
+                    }
                 }
             }
         }

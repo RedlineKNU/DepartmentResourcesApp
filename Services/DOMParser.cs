@@ -1,4 +1,5 @@
-﻿using System.Xml;
+﻿using System;
+using System.Xml;
 
 namespace DepartmentResourcesApp.Services
 {
@@ -20,31 +21,38 @@ namespace DepartmentResourcesApp.Services
 
             foreach (XmlNode resource in resources)
             {
-                var title = resource.Attributes["title"]?.InnerText;
-                var type = resource.Attributes["type"]?.InnerText;
-
-                _outputAction($"Назва: {title}");
-                _outputAction($"Тип: {type}");
+                if (resource.Attributes != null)
+                {
+                    foreach (XmlAttribute attr in resource.Attributes)
+                    {
+                        _outputAction($"{attr.Name}: {attr.Value}");
+                    }
+                }
 
                 foreach (XmlNode child in resource.ChildNodes)
                 {
-                    switch (child.Name)
-                    {
-                        case "annotation":
-                            _outputAction($"Анотація: {child.InnerText}");
-                            break;
-                        case "author":
-                            _outputAction($"Автор: {child.InnerText}");
-                            break;
-                        case "usage_conditions":
-                            _outputAction($"Умови використання: {child.InnerText}");
-                            break;
-                        case "address":
-                            _outputAction($"Адреса: {child.InnerText}");
-                            break;
-                    }
+                    _outputAction($"{child.Name}: {child.InnerText}");
                 }
                 _outputAction(new string('-', 30));
+            }
+        }
+
+        public void SearchByKeyword(string filePath, string keyword)
+        {
+            XmlDocument doc = new XmlDocument();
+            doc.Load(filePath);
+
+            XmlNodeList nodes = doc.GetElementsByTagName("resource");
+
+            foreach (XmlNode node in nodes)
+            {
+                foreach (XmlNode child in node.ChildNodes)
+                {
+                    if (child.InnerText.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _outputAction($"Знайдено збіг: {child.Name} - {child.InnerText}");
+                    }
+                }
             }
         }
     }
