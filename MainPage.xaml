@@ -34,6 +34,17 @@
                 </Picker.ItemsSource>
             </Picker>
 
+            <!-- Вибір атрибуту для сортування -->
+            <Label Text="Виберіть атрибут для сортування:" FontSize="18" TextColor="#007ACC" />
+            <Picker x:Name="attributePicker" TextColor="White" BackgroundColor="#007ACC" />
+
+            <!-- Поле для введення значення атрибуту -->
+            <Label Text="Введіть значення атрибуту:" FontSize="18" TextColor="#007ACC" />
+            <Entry x:Name="attributeValueEntry" Placeholder="Введіть значення..." BackgroundColor="White" TextColor="#333" />
+
+            <!-- Кнопка для застосування фільтру -->
+            <Button Text="Застосувати фільтр" Clicked="OnFilterApplyClicked" BackgroundColor="#2196F3" TextColor="White" />
+
             <!-- Кнопки для виконання дій -->
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
                 <Button Text="Аналізувати" Clicked="OnAnalyzeClicked" BackgroundColor="#4CAF50" TextColor="White" />
