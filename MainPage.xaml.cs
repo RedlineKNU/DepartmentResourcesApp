@@ -1,6 +1,9 @@
-﻿using System.Xml;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.Maui.Controls;
+using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Xml.Xsl;
 
 namespace DepartmentResourcesApp
 {
@@ -9,262 +12,138 @@ namespace DepartmentResourcesApp
         private string xmlFilePath;
         private string xslFilePath;
         private List<string> availableAttributes = new List<string>();
+        private XmlParserContext _parserContext;
 
         public MainPage()
         {
             InitializeComponent();
+            _parserContext = new XmlParserContext(new SAXParser()); // Початкова стратегія (SAX)
         }
 
-        // Завантаження файлу XML
         private async void OnFileLoadClicked(object sender, EventArgs e)
         {
-            var file = await FilePicker.PickAsync(new PickOptions
+            // Завантаження XML-файлу
+            var xmlFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                PickerTitle = "Виберіть файл XML",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    { DevicePlatform.Android, new[] { "application/xml" } },
-                    { DevicePlatform.iOS, new[] { "public.xml" } },
-                    { DevicePlatform.MacCatalyst, new[] { "public.xml" } },
-                    { DevicePlatform.WinUI, new[] { ".xml" } }
-                })
+                { DevicePlatform.iOS, new[] { "public.xml" } },
+                { DevicePlatform.Android, new[] { "application/xml" } },
+                { DevicePlatform.WinUI, new[] { ".xml" } },
+                { DevicePlatform.MacCatalyst, new[] { "public.xml" } }
             });
 
-            if (file != null)
+            var result = await FilePicker.Default.PickAsync(new PickOptions
             {
-                xmlFilePath = file.FullPath;
-                filePathLabel.Text = Path.GetFileName(xmlFilePath);
-                LoadAvailableAttributes();
+                PickerTitle = "Виберіть XML файл",
+                FileTypes = xmlFileType
+            });
+
+            if (result != null)
+            {
+                xmlFilePath = result.FullPath;
+                filePathLabel.Text = $"Вибрано файл: {Path.GetFileName(xmlFilePath)}";
+
+                // Оновити доступні атрибути
+                UpdateAvailableAttributes();
             }
         }
 
-        // Завантаження файлу XSL
         private async void OnXslFileLoadClicked(object sender, EventArgs e)
         {
-            var file = await FilePicker.PickAsync(new PickOptions
+            // Завантаження XSL-файлу
+            var xslFileType = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                PickerTitle = "Виберіть файл XSL",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    { DevicePlatform.Android, new[] { "application/xml" } },
-                    { DevicePlatform.iOS, new[] { "public.xml" } },
-                    { DevicePlatform.MacCatalyst, new[] { "public.xml" } },
-                    { DevicePlatform.WinUI, new[] { ".xsl" } }
-                })
+                { DevicePlatform.iOS, new[] { "public.xml" } },
+                { DevicePlatform.Android, new[] { "application/xml" } },
+                { DevicePlatform.WinUI, new[] { ".xsl" } },
+                { DevicePlatform.MacCatalyst, new[] { "public.xml" } }
             });
 
-            if (file != null)
+            var result = await FilePicker.Default.PickAsync(new PickOptions
             {
-                xslFilePath = file.FullPath;
-                xslPathLabel.Text = Path.GetFileName(xslFilePath);
+                PickerTitle = "Виберіть XSL файл",
+                FileTypes = xslFileType
+            });
+
+            if (result != null)
+            {
+                xslFilePath = result.FullPath;
+                xslPathLabel.Text = $"Вибрано файл: {Path.GetFileName(xslFilePath)}";
             }
         }
 
-        // «підгрузка даних»
-        private void LoadAvailableAttributes()
-        {
-            if (string.IsNullOrEmpty(xmlFilePath)) return;
-
-            try
-            {
-                XDocument doc = XDocument.Load(xmlFilePath);
-                availableAttributes = doc.Descendants()
-                                         .Attributes()
-                                         .Select(a => a.Name.LocalName)
-                                         .Distinct()
-                                         .ToList();
-                attributePicker.ItemsSource = availableAttributes;
-            }
-            catch (Exception ex)
-            {
-                DisplayAlert("Error", "Не вдалося завантажити атрибути: " + ex.Message, "OK");
-            }
-        }
-
-        // Аналізування XML і відображення всіх данних в полі результатів
         private async void OnAnalyzeClicked(object sender, EventArgs e)
         {
+            // Перевірка на вибір файлу та методу
             if (string.IsNullOrEmpty(xmlFilePath) || strategyPicker.SelectedIndex == -1)
             {
-                await DisplayAlert("Error", "Виберіть XML-файл і метод обробки", "OK");
+                await DisplayAlert("Помилка", "Виберіть XML-файл і метод обробки", "OK");
                 return;
             }
 
-            string method = strategyPicker.SelectedItem.ToString();
-            string analysisResult = method switch
+            // Вибір стратегії на основі обраного методу
+            IXmlParsingStrategy strategy = strategyPicker.SelectedItem.ToString() switch
             {
-                "SAX" => AnalyzeWithSAX(),
-                "DOM" => AnalyzeWithDOM(),
-                "LINQ" => AnalyzeWithLINQ(),
-                _ => "Невідомий метод аналізу"
+                "SAX" => new SAXParser(),
+                "DOM" => new DOMParser(),
+                "LINQ" => new LINQParser(),
+                _ => null
             };
 
+            if (strategy == null) return;
+
+            // Встановити обрану стратегію в контексті та виконати аналіз
+            _parserContext.SetStrategy(strategy);
+            string analysisResult = _parserContext.Analyze(xmlFilePath);
             analysisOutputEditor.Text = analysisResult;
         }
 
-
-        private string AnalyzeWithSAX()
-        {
-            try
-            {
-                List<string> analysisResults = new List<string>();
-
-                analysisResults.Add("Аналіз за допомогою SAX:");
-                analysisResults.Add(new string('-', 30));
-
-                using (XmlReader reader = XmlReader.Create(xmlFilePath))
-                {
-                    while (reader.Read())
-                    {
-                        // Початок елемента "resource"
-                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "resource")
-                        {
-                            // Обробка атрибутів
-                            if (reader.HasAttributes)
-                            {
-                                while (reader.MoveToNextAttribute())
-                                {
-                                    analysisResults.Add($"{reader.Name}: {reader.Value}");
-                                }
-                            }
-                        }
-
-                        // Обробка дочірніх елементів
-                        if (reader.NodeType == XmlNodeType.Element && reader.Depth > 1)
-                        {
-                            string elementName = reader.Name;
-                            reader.Read();
-                            if (reader.NodeType == XmlNodeType.Text)
-                            {
-                                analysisResults.Add($"{elementName}: {reader.Value}");
-                            }
-                        }
-
-                        // Закінчення елемента "resource"
-                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "resource")
-                        {
-                            analysisResults.Add(new string('-', 30));
-                        }
-                    }
-                }
-
-                return string.Join(Environment.NewLine, analysisResults);
-            }
-            catch (Exception ex)
-            {
-                return "Помилка під час аналізу SAX: " + ex.Message;
-            }
-        }
-
-
-
-        private string AnalyzeWithDOM()
-        {
-            try
-            {
-                List<string> analysisResults = new List<string>
-        {
-            "Аналіз за допомогою DOM:",
-            new string('-', 30)
-        };
-
-                XmlDocument doc = new XmlDocument();
-                doc.Load(xmlFilePath);
-
-                XmlNodeList resources = doc.GetElementsByTagName("resource");
-
-                foreach (XmlNode resource in resources)
-                {
-                    if (resource.Attributes != null)
-                    {
-                        foreach (XmlAttribute attr in resource.Attributes)
-                        {
-                            analysisResults.Add($"{attr.Name}: {attr.Value}");
-                        }
-                    }
-
-                    foreach (XmlNode child in resource.ChildNodes)
-                    {
-                        analysisResults.Add($"{child.Name}: {child.InnerText}");
-                    }
-
-                    analysisResults.Add(new string('-', 30));
-                }
-
-                return string.Join(Environment.NewLine, analysisResults);
-            }
-            catch (Exception ex)
-            {
-                return "Помилка під час аналізу DOM: " + ex.Message;
-            }
-        }
-
-
-        private string AnalyzeWithLINQ()
-        {
-            try
-            {
-                List<string> analysisResults = new List<string>
-        {
-            "Аналіз за допомогою LINQ:",
-            new string('-', 30)
-        };
-
-                XDocument doc = XDocument.Load(xmlFilePath);
-                var resources = doc.Descendants("resource");
-
-                foreach (var resource in resources)
-                {
-                    foreach (var attr in resource.Attributes())
-                    {
-                        analysisResults.Add($"{attr.Name}: {attr.Value}");
-                    }
-
-                    foreach (var element in resource.Elements())
-                    {
-                        analysisResults.Add($"{element.Name}: {element.Value}");
-                    }
-
-                    analysisResults.Add(new string('-', 30));
-                }
-
-                return string.Join(Environment.NewLine, analysisResults);
-            }
-            catch (Exception ex)
-            {
-                return "Помилка під час аналізу LINQ: " + ex.Message;
-            }
-        }
-
-
-
-
-        // Перетворення XML на HTML
         private async void OnTransformClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(xmlFilePath) || string.IsNullOrEmpty(xslFilePath))
             {
-                await DisplayAlert("Error", "Виберіть файли XML і XSL", "OK");
+                await DisplayAlert("Помилка", "Виберіть XML та XSL файли", "OK");
                 return;
             }
 
-            try
+            // Виконання трансформації XML -> HTML
+            string htmlContent = XslTransformer.Transform(xmlFilePath, xslFilePath);
+            if (!string.IsNullOrEmpty(htmlContent))
             {
-                XslCompiledTransform xslt = new XslCompiledTransform();
-                xslt.Load(xslFilePath);
-
-                string htmlOutputPath = Path.Combine(FileSystem.CacheDirectory, "output.html");
-                using (var xmlReader = XmlReader.Create(xmlFilePath))
-                using (var writer = XmlWriter.Create(htmlOutputPath))
-                {
-                    xslt.Transform(xmlReader, writer);
-                }
-
-                htmlWebView.Source = htmlOutputPath;
+                htmlWebView.Source = new HtmlWebViewSource { Html = htmlContent };
             }
-            catch (Exception ex)
+        }
+
+
+
+        private void OnClearClicked(object sender, EventArgs e)
+        {
+            // Очищення полів виводу та вибору параметрів
+            analysisOutputEditor.Text = string.Empty;
+            htmlWebView.Source = new HtmlWebViewSource { Html = string.Empty }; //Очистка поля для відображення HTML
+            attributePicker.SelectedIndex = -1;
+            attributeValueEntry.Text = string.Empty;
+            filePathLabel.Text = "Файл не вибрано";
+            xslPathLabel.Text = "Файл не вибрано";
+            xmlFilePath = null;
+            xslFilePath = null;
+        }
+
+        private async void OnExitClicked(object sender, EventArgs e)
+        {
+            bool confirmExit = await DisplayAlert("Вихід", "Чи дійсно ви хочете завершити роботу з програмою?", "Так", "Ні");
+            if (confirmExit)
             {
-                await DisplayAlert("Error", "Не вдалося перетворити XML на HTML: " + ex.Message, "OK");
+                Application.Current.Quit();
+            }
+        }
+
+        private void UpdateAvailableAttributes()
+        {
+            // Оновлення списку доступних атрибутів для вибору в `attributePicker`
+            if (!string.IsNullOrEmpty(xmlFilePath))
+            {
+                availableAttributes = XmlAttributeExtractor.ExtractAttributes(xmlFilePath, "resource");
+                attributePicker.ItemsSource = availableAttributes;
             }
         }
 
@@ -379,34 +258,47 @@ namespace DepartmentResourcesApp
             }
         }
 
+    }
 
-
-
-        // Очистка усіх полів 
-        private void OnClearClicked(object sender, EventArgs e)
+    public static class XmlAttributeExtractor
+    {
+        public static List<string> ExtractAttributes(string xmlFilePath, string nodeName)
         {
-            filePathLabel.Text = "Файл не вибрано";
-            xslPathLabel.Text = "Файл не вибрано";
-            xmlFilePath = null;
-            xslFilePath = null;
-            attributePicker.SelectedIndex = -1;
-            attributeValueEntry.Text = string.Empty;
-            strategyPicker.SelectedIndex = -1;
-            analysisOutputEditor.Text = string.Empty;
-            htmlWebView.Source = new HtmlWebViewSource { Html = string.Empty }; //Очистка поля для відображення HTML
-        }
+            var attributes = new List<string>();
 
-        // Вихід з програми
-        private async void OnExitClicked(object sender, EventArgs e)
-        {
-            bool confirm = await DisplayAlert("Вихід", "Ви впевнені, що хочете вийти?", "Так", "Ні");
-            if (confirm)
+            // Парсинг XML для знаходження унікальних атрибутів
+            var doc = new System.Xml.XmlDocument();
+            doc.Load(xmlFilePath);
+            var nodes = doc.GetElementsByTagName(nodeName);
+
+            foreach (System.Xml.XmlNode node in nodes)
             {
-                Application.Current.Quit();
+                foreach (System.Xml.XmlAttribute attribute in node.Attributes)
+                {
+                    if (!attributes.Contains(attribute.Name))
+                    {
+                        attributes.Add(attribute.Name);
+                    }
+                }
             }
+
+            return attributes;
+        }
+    }
+
+    public static class XslTransformer
+    {
+        public static string Transform(string xmlFilePath, string xslFilePath)
+        {
+            var xslTransform = new System.Xml.Xsl.XslCompiledTransform();
+            xslTransform.Load(xslFilePath);
+
+            using var xmlReader = System.Xml.XmlReader.Create(xmlFilePath);
+            using var stringWriter = new StringWriter();
+            using var xmlWriter = System.Xml.XmlWriter.Create(stringWriter);
+
+            xslTransform.Transform(xmlReader, xmlWriter);
+            return stringWriter.ToString();
         }
     }
 }
-
-
-

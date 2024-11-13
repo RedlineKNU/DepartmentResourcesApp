@@ -1,49 +1,38 @@
-﻿//using System;
-//using System.Xml;
+﻿using System.Xml;
 
+public class DOMParser : IXmlParsingStrategy
+{
+    public string Analyze(string xmlFilePath)
+    {
+        List<string> analysisResults = new List<string>
+        {
+            "Аналіз за допомогою DOM:",
+            new string('-', 30)
+        };
 
+        XmlDocument doc = new XmlDocument();
+        doc.Load(xmlFilePath);
 
-//namespace DepartmentResourcesApp.Services
-//{
-//    public class DOMParser : IXmlParsingStrategy
-//    {
-//        public void Parse(string filePath)
-//        {
-//            List<string> analysisResults = new List<string>
-//        {
-//            "Аналіз за допомогою DOM:",
-//            new string('-', 30)
-//        };
+        XmlNodeList resources = doc.GetElementsByTagName("resource");
 
-//            try
-//            {
-//                XmlDocument doc = new XmlDocument();
-//                doc.Load(filePath);
+        foreach (XmlNode resource in resources)
+        {
+            if (resource.Attributes != null)
+            {
+                foreach (XmlAttribute attr in resource.Attributes)
+                {
+                    analysisResults.Add($"{attr.Name}: {attr.Value}");
+                }
+            }
 
-//                XmlNodeList nodes = doc.GetElementsByTagName("resource");
-//                foreach (XmlNode node in nodes)
-//                {
-//                    if (node.Attributes != null)
-//                    {
-//                        foreach (XmlAttribute attr in node.Attributes)
-//                        {
-//                            analysisResults.Add($"{attr.Name}: {attr.Value}");
-//                        }
-//                    }
+            foreach (XmlNode child in resource.ChildNodes)
+            {
+                analysisResults.Add($"{child.Name}: {child.InnerText}");
+            }
 
-//                    foreach (XmlNode childNode in node.ChildNodes)
-//                    {
-//                        analysisResults.Add($"{childNode.Name}: {childNode.InnerText}");
-//                    }
-//                    analysisResults.Add(new string('-', 30));
-//                }
+            analysisResults.Add(new string('-', 30));
+        }
 
-//                Console.WriteLine(string.Join(Environment.NewLine, analysisResults));
-//            }
-//            catch (Exception ex)
-//            {
-//                Console.WriteLine("Помилка під час аналізу DOM: " + ex.Message);
-//            }
-//        }
-//    }
-//}
+        return string.Join(Environment.NewLine, analysisResults);
+    }
+}

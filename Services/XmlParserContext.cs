@@ -1,17 +1,21 @@
-﻿//namespace DepartmentResourcesApp.Services
-//{
-//    public class XmlParserContext
-//    {
-//        private IXmlParsingStrategy _strategy;
+﻿
+    public class XmlParserContext
+    {
+        private IXmlParsingStrategy _strategy;
 
-//        public void SetStrategy(IXmlParsingStrategy strategy)
-//        {
-//            _strategy = strategy;
-//        }
+        public XmlParserContext(IXmlParsingStrategy strategy)
+        {
+            _strategy = strategy;
+        }
 
-//        public void ExecuteStrategy(string filePath)
-//        {
-//            _strategy?.Parse(filePath);
-//        }
-//    }
-//}
+        public void SetStrategy(IXmlParsingStrategy strategy)
+        {
+            _strategy = strategy;
+        }
+
+        public string Analyze(string xmlFilePath)
+        {
+            return _strategy.Analyze(xmlFilePath);
+        }
+    }
+

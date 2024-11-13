@@ -1,8 +1,4 @@
-﻿//namespace DepartmentResourcesApp.Services
-//{
-//    public interface IXmlParsingStrategy
-//    {
-//        void Parse(string filePath);
-//    }
-//}
-
+﻿public interface IXmlParsingStrategy
+{
+    string Analyze(string xmlFilePath);
+}
