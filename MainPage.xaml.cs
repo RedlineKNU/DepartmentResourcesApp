@@ -1,10 +1,4 @@
-﻿using Microsoft.Maui.Controls;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Xml;
+﻿using System.Xml;
 using System.Xml.Linq;
 using System.Xml.Xsl;
 
@@ -21,12 +15,12 @@ namespace DepartmentResourcesApp
             InitializeComponent();
         }
 
-        // Load XML File
+        // Завантаження файлу XML
         private async void OnFileLoadClicked(object sender, EventArgs e)
         {
             var file = await FilePicker.PickAsync(new PickOptions
             {
-                PickerTitle = "Select XML File",
+                PickerTitle = "Виберіть файл XML",
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
                 {
                     { DevicePlatform.Android, new[] { "application/xml" } },
@@ -44,12 +38,12 @@ namespace DepartmentResourcesApp
             }
         }
 
-        // Load XSL File
+        // Завантаження файлу XSL
         private async void OnXslFileLoadClicked(object sender, EventArgs e)
         {
             var file = await FilePicker.PickAsync(new PickOptions
             {
-                PickerTitle = "Select XSL File",
+                PickerTitle = "Виберіть файл XSL",
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
                 {
                     { DevicePlatform.Android, new[] { "application/xml" } },
@@ -66,7 +60,7 @@ namespace DepartmentResourcesApp
             }
         }
 
-        // Load Attributes into the Picker from XML
+        // «підгрузка даних»
         private void LoadAvailableAttributes()
         {
             if (string.IsNullOrEmpty(xmlFilePath)) return;
@@ -83,16 +77,16 @@ namespace DepartmentResourcesApp
             }
             catch (Exception ex)
             {
-                DisplayAlert("Error", "Failed to load attributes: " + ex.Message, "OK");
+                DisplayAlert("Error", "Не вдалося завантажити атрибути: " + ex.Message, "OK");
             }
         }
 
-        // Analyze XML and display all data in the results field
+        // Аналізування XML і відображення всіх данних в полі результатів
         private async void OnAnalyzeClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(xmlFilePath) || strategyPicker.SelectedIndex == -1)
             {
-                await DisplayAlert("Error", "Please select an XML file and processing method", "OK");
+                await DisplayAlert("Error", "Виберіть XML-файл і метод обробки", "OK");
                 return;
             }
 
@@ -102,7 +96,7 @@ namespace DepartmentResourcesApp
                 "SAX" => AnalyzeWithSAX(),
                 "DOM" => AnalyzeWithDOM(),
                 "LINQ" => AnalyzeWithLINQ(),
-                _ => "Unknown analysis method"
+                _ => "Невідомий метод аналізу"
             };
 
             analysisOutputEditor.Text = analysisResult;
@@ -158,7 +152,7 @@ namespace DepartmentResourcesApp
             }
             catch (Exception ex)
             {
-                return "Error during SAX analysis: " + ex.Message;
+                return "Помилка під час аналізу SAX: " + ex.Message;
             }
         }
 
@@ -201,7 +195,7 @@ namespace DepartmentResourcesApp
             }
             catch (Exception ex)
             {
-                return "Error during DOM analysis: " + ex.Message;
+                return "Помилка під час аналізу DOM: " + ex.Message;
             }
         }
 
@@ -238,19 +232,19 @@ namespace DepartmentResourcesApp
             }
             catch (Exception ex)
             {
-                return "Error during LINQ analysis: " + ex.Message;
+                return "Помилка під час аналізу LINQ: " + ex.Message;
             }
         }
 
 
 
 
-        // Transform XML to HTML
+        // Перетворення XML на HTML
         private async void OnTransformClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(xmlFilePath) || string.IsNullOrEmpty(xslFilePath))
             {
-                await DisplayAlert("Error", "Please select both XML and XSL files", "OK");
+                await DisplayAlert("Error", "Виберіть файли XML і XSL", "OK");
                 return;
             }
 
@@ -270,27 +264,91 @@ namespace DepartmentResourcesApp
             }
             catch (Exception ex)
             {
-                await DisplayAlert("Error", "Failed to transform XML to HTML: " + ex.Message, "OK");
+                await DisplayAlert("Error", "Не вдалося перетворити XML на HTML: " + ex.Message, "OK");
             }
         }
 
-        // Apply Filter based on selected attribute and value
+        // Застосування фільтру на основі вибраного атрибута та значення
         private async void OnFilterApplyClicked(object sender, EventArgs e)
         {
             if (attributePicker.SelectedIndex == -1 || string.IsNullOrEmpty(attributeValueEntry.Text))
             {
-                await DisplayAlert("Error", "Please select an attribute and enter a value to filter", "OK");
+                await DisplayAlert("Error", "Виберіть атрибут і введіть значення для фільтрування", "OK");
                 return;
             }
 
             string selectedAttribute = attributePicker.SelectedItem.ToString();
             string attributeValue = attributeValueEntry.Text;
 
+            // Опрацювання операторів для років (<, <=, >, >=)
+            string operatorSymbol = string.Empty;
+            if (attributeValue.StartsWith("<="))
+            {
+                operatorSymbol = "<=";
+                attributeValue = attributeValue.Substring(2).Trim();
+            }
+            else if (attributeValue.StartsWith("<"))
+            {
+                operatorSymbol = "<";
+                attributeValue = attributeValue.Substring(1).Trim();
+            }
+            else if (attributeValue.StartsWith(">="))
+            {
+                operatorSymbol = ">=";
+                attributeValue = attributeValue.Substring(2).Trim();
+            }
+            else if (attributeValue.StartsWith(">"))
+            {
+                operatorSymbol = ">";
+                attributeValue = attributeValue.Substring(1).Trim();
+            }
+
             try
             {
                 XDocument doc = XDocument.Load(xmlFilePath);
                 var filteredElements = doc.Descendants("resource")
-                                          .Where(el => el.Attribute(selectedAttribute)?.Value == attributeValue);
+                                          .Where(el =>
+                                          {
+                                              var attribute = el.Attribute(selectedAttribute)?.Value;
+                                              if (attribute != null)
+                                              {
+                                                  // Спроба парснути значення атрибута як число для порівняння
+                                                  if (double.TryParse(attribute, out double attributeNumber) && double.TryParse(attributeValue, out double filterNumber))
+                                                  {
+                                                      switch (operatorSymbol)
+                                                      {
+                                                          case "<=":
+                                                              return attributeNumber <= filterNumber;
+                                                          case "<":
+                                                              return attributeNumber < filterNumber;
+                                                          case ">=":
+                                                              return attributeNumber >= filterNumber;
+                                                          case ">":
+                                                              return attributeNumber > filterNumber;
+                                                          default:
+                                                              return attribute == attributeValue; // немає оператору, тому ідеально підходе
+                                                      }
+                                                  }
+                                                  else
+                                                  {
+                                                      // Якщо атрибут не є числом, виконується порівняння рядків
+                                                      switch (operatorSymbol)
+                                                      {
+                                                          case "<=":
+                                                              return string.Compare(attribute, attributeValue) <= 0;
+                                                          case "<":
+                                                              return string.Compare(attribute, attributeValue) < 0;
+                                                          case ">=":
+                                                              return string.Compare(attribute, attributeValue) >= 0;
+                                                          case ">":
+                                                              return string.Compare(attribute, attributeValue) > 0;
+                                                          default:
+                                                              return attribute.Contains(attributeValue, StringComparison.OrdinalIgnoreCase); // default to partial match
+                                                      }
+                                                  }
+                                              }
+                                              return false;
+                                          });
 
                 if (filteredElements.Any())
                 {
@@ -312,17 +370,19 @@ namespace DepartmentResourcesApp
                 }
                 else
                 {
-                    analysisOutputEditor.Text = "No elements found with the specified attribute and value.";
+                    analysisOutputEditor.Text = "Не знайдено елементів із зазначеним атрибутом і значенням.";
                 }
             }
             catch (Exception ex)
             {
-                analysisOutputEditor.Text = "Error during filtering: " + ex.Message;
+                analysisOutputEditor.Text = "Помилка під час фільтрації: " + ex.Message;
             }
         }
 
 
-        // Clear all fields
+
+
+        // Очистка усіх полів 
         private void OnClearClicked(object sender, EventArgs e)
         {
             filePathLabel.Text = "Файл не вибрано";
@@ -333,10 +393,10 @@ namespace DepartmentResourcesApp
             attributeValueEntry.Text = string.Empty;
             strategyPicker.SelectedIndex = -1;
             analysisOutputEditor.Text = string.Empty;
-            htmlWebView.Source = new HtmlWebViewSource { Html = string.Empty };
+            htmlWebView.Source = new HtmlWebViewSource { Html = string.Empty }; //Очистка поля для відображення HTML
         }
 
-        // Exit application
+        // Вихід з програми
         private async void OnExitClicked(object sender, EventArgs e)
         {
             bool confirm = await DisplayAlert("Вихід", "Ви впевнені, що хочете вийти?", "Так", "Ні");
@@ -347,3 +407,6 @@ namespace DepartmentResourcesApp
         }
     }
 }
+
+
+

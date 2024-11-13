@@ -5,13 +5,13 @@
 		<usage_conditions>Безкоштовно для студентів</usage_conditions>
 		<address>https://example.com/resource1</address>
 	</resource>
-	<resource title="Наукова стаття" type="Стаття">
+	<resource title="Наукова стаття" type="Стаття" year="2015">
 		<annotation>Дослідження в галузі штучного інтелекту</annotation>
 		<author>Оксана Петренко</author>
 		<usage_conditions>Платний доступ</usage_conditions>
 		<address>https://example.com/resource2</address>
 	</resource>
-	<resource title="Онлайн-курс" type="Курс" platform="Coursera">
+	<resource title="Онлайн-курс" type="Курс" platform="Coursera" year="2026">
 		<annotation>Курс з Python для аналізу даних</annotation>
 		<author>Михайло Коваль</author>
 		<usage_conditions>Доступно за підпискою</usage_conditions>

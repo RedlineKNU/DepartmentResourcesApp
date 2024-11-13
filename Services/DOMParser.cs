@@ -1,59 +1,49 @@
-﻿using System;
-using System.Xml;
+﻿//using System;
+//using System.Xml;
 
-namespace DepartmentResourcesApp.Services
-{
-    public class DOMParser : IXmlParsingStrategy
-    {
-        private readonly Action<string> _outputAction;
 
-        public DOMParser(Action<string> outputAction)
-        {
-            _outputAction = outputAction;
-        }
 
-        public void Parse(string filePath)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(filePath);
+//namespace DepartmentResourcesApp.Services
+//{
+//    public class DOMParser : IXmlParsingStrategy
+//    {
+//        public void Parse(string filePath)
+//        {
+//            List<string> analysisResults = new List<string>
+//        {
+//            "Аналіз за допомогою DOM:",
+//            new string('-', 30)
+//        };
 
-            XmlNodeList resources = doc.GetElementsByTagName("resource");
+//            try
+//            {
+//                XmlDocument doc = new XmlDocument();
+//                doc.Load(filePath);
 
-            foreach (XmlNode resource in resources)
-            {
-                if (resource.Attributes != null)
-                {
-                    foreach (XmlAttribute attr in resource.Attributes)
-                    {
-                        _outputAction($"{attr.Name}: {attr.Value}");
-                    }
-                }
+//                XmlNodeList nodes = doc.GetElementsByTagName("resource");
+//                foreach (XmlNode node in nodes)
+//                {
+//                    if (node.Attributes != null)
+//                    {
+//                        foreach (XmlAttribute attr in node.Attributes)
+//                        {
+//                            analysisResults.Add($"{attr.Name}: {attr.Value}");
+//                        }
+//                    }
 
-                foreach (XmlNode child in resource.ChildNodes)
-                {
-                    _outputAction($"{child.Name}: {child.InnerText}");
-                }
-                _outputAction(new string('-', 30));
-            }
-        }
+//                    foreach (XmlNode childNode in node.ChildNodes)
+//                    {
+//                        analysisResults.Add($"{childNode.Name}: {childNode.InnerText}");
+//                    }
+//                    analysisResults.Add(new string('-', 30));
+//                }
 
-        public void SearchByKeyword(string filePath, string keyword)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.Load(filePath);
-
-            XmlNodeList nodes = doc.GetElementsByTagName("resource");
-
-            foreach (XmlNode node in nodes)
-            {
-                foreach (XmlNode child in node.ChildNodes)
-                {
-                    if (child.InnerText.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _outputAction($"Знайдено збіг: {child.Name} - {child.InnerText}");
-                    }
-                }
-            }
-        }
-    }
-}
+//                Console.WriteLine(string.Join(Environment.NewLine, analysisResults));
+//            }
+//            catch (Exception ex)
+//            {
+//                Console.WriteLine("Помилка під час аналізу DOM: " + ex.Message);
+//            }
+//        }
+//    }
+//}

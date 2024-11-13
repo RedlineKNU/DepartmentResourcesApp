@@ -1,50 +1,62 @@
-﻿using System;
-using System.Xml;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Xml;
+//using DepartmentResourcesApp.Services;
 
-namespace DepartmentResourcesApp.Services
-{
-    public class SAXParser : IXmlParsingStrategy
-    {
-        private readonly Action<string> _outputAction;
 
-        public SAXParser(Action<string> outputAction)
-        {
-            _outputAction = outputAction;
-        }
+//namespace DepartmentResourcesApp.Services
+//{
+//    public class SAXParser : IXmlParsingStrategy
+//    {
+//        public void Parse(string filePath)
+//        {
+//            List<string> analysisResults = new List<string>
+//        {
+//            "Аналіз за допомогою SAX:",
+//            new string('-', 30)
+//        };
 
-        public void Parse(string filePath)
-        {
-            using (XmlReader reader = XmlReader.Create(filePath))
-            {
-                while (reader.Read())
-                {
-                    if (reader.NodeType == XmlNodeType.Element && reader.Name == "resource")
-                    {
-                        _outputAction($"Елемент: {reader.Name}");
-                        if (reader.HasAttributes)
-                        {
-                            while (reader.MoveToNextAttribute())
-                            {
-                                _outputAction($"{reader.Name}: {reader.Value}");
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//            try
+//            {
+//                using (XmlReader reader = XmlReader.Create(filePath))
+//                {
+//                    while (reader.Read())
+//                    {
+//                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "resource")
+//                        {
+//                            if (reader.HasAttributes)
+//                            {
+//                                while (reader.MoveToNextAttribute())
+//                                {
+//                                    analysisResults.Add($"{reader.Name}: {reader.Value}");
+//                                }
+//                            }
+//                        }
 
-        public void SearchByKeyword(string filePath, string keyword)
-        {
-            using (XmlReader reader = XmlReader.Create(filePath))
-            {
-                while (reader.Read())
-                {
-                    if (reader.NodeType == XmlNodeType.Text && reader.Value.Contains(keyword, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _outputAction($"Знайдено збіг: {reader.Value}");
-                    }
-                }
-            }
-        }
-    }
-}
+//                        if (reader.NodeType == XmlNodeType.Element && reader.Depth > 1)
+//                        {
+//                            string elementName = reader.Name;
+//                            reader.Read();
+//                            if (reader.NodeType == XmlNodeType.Text)
+//                            {
+//                                analysisResults.Add($"{elementName}: {reader.Value}");
+//                            }
+//                        }
+
+//                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "resource")
+//                        {
+//                            analysisResults.Add(new string('-', 30));
+//                        }
+//                    }
+//                }
+//                Console.WriteLine(string.Join(Environment.NewLine, analysisResults));
+//            }
+//            catch (Exception ex)
+//            {
+//                Console.WriteLine("Помилка під час аналізу SAX: " + ex.Message);
+//            }
+//        }
+//    }
+//}
+
+    
