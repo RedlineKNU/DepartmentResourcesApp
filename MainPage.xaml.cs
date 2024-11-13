@@ -19,7 +19,6 @@ namespace DepartmentResourcesApp
         public MainPage()
         {
             InitializeComponent();
-            // Removed PopulateAttributePicker(); since LoadAvailableAttributes is handling attribute loading
         }
 
         // Load XML File
@@ -88,12 +87,12 @@ namespace DepartmentResourcesApp
             }
         }
 
-        // Analyze XML
+        // Analyze XML and display all data in the results field
         private async void OnAnalyzeClicked(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(xmlFilePath) || strategyPicker.SelectedIndex == -1)
             {
-                await DisplayAlert("Error", "Please select XML file and processing method", "OK");
+                await DisplayAlert("Error", "Please select an XML file and processing method", "OK");
                 return;
             }
 
@@ -109,19 +108,96 @@ namespace DepartmentResourcesApp
             analysisOutputEditor.Text = analysisResult;
         }
 
+
         private string AnalyzeWithSAX()
         {
-            // Implement SAX-based XML analysis logic here
-            return "SAX analysis not yet implemented.";
+            try
+            {
+                List<string> analysisResults = new List<string>();
+
+                analysisResults.Add("Аналіз за допомогою SAX:");
+                analysisResults.Add(new string('-', 30));
+
+                using (XmlReader reader = XmlReader.Create(xmlFilePath))
+                {
+                    while (reader.Read())
+                    {
+                        // Початок елемента "resource"
+                        if (reader.NodeType == XmlNodeType.Element && reader.Name == "resource")
+                        {
+                            // Обробка атрибутів
+                            if (reader.HasAttributes)
+                            {
+                                while (reader.MoveToNextAttribute())
+                                {
+                                    analysisResults.Add($"{reader.Name}: {reader.Value}");
+                                }
+                            }
+                        }
+
+                        // Обробка дочірніх елементів
+                        if (reader.NodeType == XmlNodeType.Element && reader.Depth > 1)
+                        {
+                            string elementName = reader.Name;
+                            reader.Read();
+                            if (reader.NodeType == XmlNodeType.Text)
+                            {
+                                analysisResults.Add($"{elementName}: {reader.Value}");
+                            }
+                        }
+
+                        // Закінчення елемента "resource"
+                        if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "resource")
+                        {
+                            analysisResults.Add(new string('-', 30));
+                        }
+                    }
+                }
+
+                return string.Join(Environment.NewLine, analysisResults);
+            }
+            catch (Exception ex)
+            {
+                return "Error during SAX analysis: " + ex.Message;
+            }
         }
+
+
 
         private string AnalyzeWithDOM()
         {
             try
             {
+                List<string> analysisResults = new List<string>
+        {
+            "Аналіз за допомогою DOM:",
+            new string('-', 30)
+        };
+
                 XmlDocument doc = new XmlDocument();
                 doc.Load(xmlFilePath);
-                return "DOM analysis successful.";
+
+                XmlNodeList resources = doc.GetElementsByTagName("resource");
+
+                foreach (XmlNode resource in resources)
+                {
+                    if (resource.Attributes != null)
+                    {
+                        foreach (XmlAttribute attr in resource.Attributes)
+                        {
+                            analysisResults.Add($"{attr.Name}: {attr.Value}");
+                        }
+                    }
+
+                    foreach (XmlNode child in resource.ChildNodes)
+                    {
+                        analysisResults.Add($"{child.Name}: {child.InnerText}");
+                    }
+
+                    analysisResults.Add(new string('-', 30));
+                }
+
+                return string.Join(Environment.NewLine, analysisResults);
             }
             catch (Exception ex)
             {
@@ -129,18 +205,45 @@ namespace DepartmentResourcesApp
             }
         }
 
+
         private string AnalyzeWithLINQ()
         {
             try
             {
+                List<string> analysisResults = new List<string>
+        {
+            "Аналіз за допомогою LINQ:",
+            new string('-', 30)
+        };
+
                 XDocument doc = XDocument.Load(xmlFilePath);
-                return "LINQ analysis successful.";
+                var resources = doc.Descendants("resource");
+
+                foreach (var resource in resources)
+                {
+                    foreach (var attr in resource.Attributes())
+                    {
+                        analysisResults.Add($"{attr.Name}: {attr.Value}");
+                    }
+
+                    foreach (var element in resource.Elements())
+                    {
+                        analysisResults.Add($"{element.Name}: {element.Value}");
+                    }
+
+                    analysisResults.Add(new string('-', 30));
+                }
+
+                return string.Join(Environment.NewLine, analysisResults);
             }
             catch (Exception ex)
             {
                 return "Error during LINQ analysis: " + ex.Message;
             }
         }
+
+
+
 
         // Transform XML to HTML
         private async void OnTransformClicked(object sender, EventArgs e)
@@ -186,12 +289,26 @@ namespace DepartmentResourcesApp
             try
             {
                 XDocument doc = XDocument.Load(xmlFilePath);
-                var filteredElements = doc.Descendants()
+                var filteredElements = doc.Descendants("resource")
                                           .Where(el => el.Attribute(selectedAttribute)?.Value == attributeValue);
 
                 if (filteredElements.Any())
                 {
-                    analysisOutputEditor.Text = string.Join(Environment.NewLine, filteredElements.Select(el => el.ToString()));
+                    analysisOutputEditor.Text = string.Empty;
+                    foreach (var element in filteredElements)
+                    {
+                        foreach (var attr in element.Attributes())
+                        {
+                            analysisOutputEditor.Text += $"{attr.Name}: {attr.Value}\n";
+                        }
+
+                        foreach (var child in element.Elements())
+                        {
+                            analysisOutputEditor.Text += $"{child.Name}: {child.Value}\n";
+                        }
+
+                        analysisOutputEditor.Text += new string('-', 30) + "\n";
+                    }
                 }
                 else
                 {
@@ -204,6 +321,7 @@ namespace DepartmentResourcesApp
             }
         }
 
+
         // Clear all fields
         private void OnClearClicked(object sender, EventArgs e)
         {
@@ -215,7 +333,7 @@ namespace DepartmentResourcesApp
             attributeValueEntry.Text = string.Empty;
             strategyPicker.SelectedIndex = -1;
             analysisOutputEditor.Text = string.Empty;
-            htmlWebView.Source = null;
+            htmlWebView.Source = new HtmlWebViewSource { Html = string.Empty };
         }
 
         // Exit application

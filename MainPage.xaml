@@ -39,7 +39,7 @@
             <Picker x:Name="attributePicker" TextColor="White" BackgroundColor="#007ACC" />
 
             <!-- Поле для введення значення атрибуту -->
-            <Label Text="Введіть значення атрибуту:" FontSize="18" TextColor="#007ACC" />
+            <Label Text="Введіть значення атрибуту для сортування:" FontSize="18" TextColor="#007ACC" />
             <Entry x:Name="attributeValueEntry" Placeholder="Введіть значення..." BackgroundColor="White" TextColor="#333" />
 
             <!-- Кнопка для застосування фільтру -->
@@ -47,10 +47,10 @@
 
             <!-- Кнопки для виконання дій -->
             <StackLayout Orientation="Horizontal" HorizontalOptions="Center" Spacing="10">
-                <Button Text="Аналізувати" Clicked="OnAnalyzeClicked" BackgroundColor="#4CAF50" TextColor="White" />
-                <Button Text="Перетворити у HTML" Clicked="OnTransformClicked" BackgroundColor="#FF9800" TextColor="White" />
+                <Button Text="Аналізувати весь файл" Clicked="OnAnalyzeClicked" BackgroundColor="#4CAF50" TextColor="White" />
+                <Button Text="Перетворити весь файл у HTML" Clicked="OnTransformClicked" BackgroundColor="#FF9800" TextColor="White" />
                 <Button Text="Очистити все" Clicked="OnClearClicked" BackgroundColor="#F44336" TextColor="White" />
-                <Button Text="Вихід" Clicked="OnExitClicked" BackgroundColor="#D32F2F" TextColor="White" />
+                <Button Text="Вихід з програми" Clicked="OnExitClicked" BackgroundColor="#D32F2F" TextColor="White" />
             </StackLayout>
 
             <!-- Поле для виводу результатів аналізу -->
