@@ -6,13 +6,13 @@ public class SAXParser : IXmlParsingStrategy
     {
         List<string> analysisResults = new List<string>
         {
-            "Аналіз за допомогою SAX:",
-            new string('-', 30)
+            "Аналіз за допомогою SAX:", 
+            new string('-', 30)  
         };
 
-        using (XmlReader reader = XmlReader.Create(xmlFilePath))
+        using (XmlReader reader = XmlReader.Create(xmlFilePath))  // Використовує XmlReader для обробки XML
         {
-            while (reader.Read())
+            while (reader.Read())  // Читання XML по черзі
             {
                 if (reader.NodeType == XmlNodeType.Element && reader.Name == "resource")
                 {
@@ -20,7 +20,7 @@ public class SAXParser : IXmlParsingStrategy
                     {
                         while (reader.MoveToNextAttribute())
                         {
-                            analysisResults.Add($"{reader.Name}: {reader.Value}");
+                            analysisResults.Add($"{reader.Name}: {reader.Value}"); 
                         }
                     }
                 }
@@ -31,17 +31,16 @@ public class SAXParser : IXmlParsingStrategy
                     reader.Read();
                     if (reader.NodeType == XmlNodeType.Text)
                     {
-                        analysisResults.Add($"{elementName}: {reader.Value}");
+                        analysisResults.Add($"{elementName}: {reader.Value}");  
                     }
                 }
 
                 if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "resource")
                 {
-                    analysisResults.Add(new string('-', 30));
+                    analysisResults.Add(new string('-', 30));  
                 }
             }
         }
-
-        return string.Join(Environment.NewLine, analysisResults);
+        return string.Join(Environment.NewLine, analysisResults);  
     }
 }
